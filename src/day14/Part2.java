@@ -3,6 +3,7 @@ package day14;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.Optional;
 
 public class Part2 {
@@ -11,7 +12,7 @@ public class Part2 {
     static int columns;
 
     public static void main(String[] args) {
-        File file = new File("src/day14/test");
+        File file = new File("src/day14/input");
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
@@ -25,13 +26,43 @@ public class Part2 {
                 rows++;
             }
 
-            for (int i = 0; i < columns; i++) {
-                moveRocksNorth(i);
+            // 1000 iterations are enough. For my input example after the 117th iteration
+            // from 52 to 52 iterations the load values repeat
+            FileWriter writer = new FileWriter("results.txt");
+            for (int cycle = 0; cycle < 1_000; cycle++) {
+                for (int rotation = 0; rotation < 4; rotation++) {
+                    for (int i = 0; i < columns; i++) {
+                        moveRocksNorth(i);
+                    }
+                    rotateMatrix(matrix);
+                }
+                writer.write(String.format("cycle %d: %d \n", cycle, calculateLoad(matrix)));
             }
+            writer.close();
 
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+    }
+
+    public static void rotateMatrix(char[][] matrix) {
+        //first find the transpose of the matrix.
+        for (int i = 0; i < rows; i++) {
+            for (int j = i; j < rows; j++) {
+                char temp = matrix[i][j];
+                matrix[i][j] = matrix[j][i];
+                matrix[j][i] = temp;
+            }
+        }
+        //reverse each row
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < rows / 2; j++) {
+                char temp = matrix[i][j];
+                matrix[i][j] = matrix[i][rows - 1 - j];
+                matrix[i][rows - 1 - j] = temp;
+            }
+        }
+
     }
 
     private static void moveRocksNorth(int column) {
